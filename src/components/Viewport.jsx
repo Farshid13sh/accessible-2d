@@ -1,155 +1,89 @@
-export default function ResearchPage() {
-  const categories = [
-    {
-      group: "Visual Spectrum Limitations",
-      items: [
-        {
-          metric: "2.2 Billion",
-          title: "Global Near & Distance Impairments",
-          context: "Per the World Health Organization, over 2.2 billion individuals manage near or distance vision complications. A massive baseline segment involves unaddressed presbyopia, creating severe focal blur for users attempting to parse small, dense typography layouts.",
-          remedy: "Enforce a fluid, type-scalable layout architecture using relative CSS units (rem/em) so elements expand dynamically with browser preferences.",
-          source: "WHO Vision Database",
-          link: "https://www.who.int/news-room/fact-sheets/detail/blindness-and-visual-impairment"
-        },
-        {
-          metric: "95.9%",
-          title: "The Automated Failure Baseline",
-          context: "An exhaustive automated software analysis tracking the top 1,000,000 global website homepages revealed that an overwhelming 95.9% displayed clear-cut, distinct WCAG 2 conformance violations.",
-          remedy: "The primary culprit is low contrast text layouts. Integrating rigorous contrast audits directly into pre-production workflows entirely eliminates this baseline failure rate.",
-          source: "The WebAIM Million Annual Evaluation",
-          link: "https://webaim.org/projects/million/"
-        }
-      ]
-    },
-    {
-      group: "Atypical Color Perception Profiles",
-      items: [
-        {
-          metric: "1 in 12 Men",
-          title: "Congenital Color Vision Deficiencies",
-          context: "Congenital color vision deficiencies affect roughly 8% of male populations and 0.5% of female populations globally. This encompasses Protanopia (red-blindness), Deuteranopia (green-blindness), and the rarer Tritanopia (blue-yellow confusion).",
-          remedy: "Never utilize color indicators as the exclusive mechanism to communicate dynamic system states, data variations, alerts, or form interface validation errors.",
-          source: "NIH Eye Institute Research",
-          link: "https://www.nih.gov/"
-        },
-        {
-          metric: "1 in 30,000",
-          title: "Total Achromatopsia Prevalence",
-          context: "Achromatopsia completely limits the eye's retinal cone system, leaving individuals to process visual details exclusively through luminance patterns. Standard color-blind fallback states fail to address this condition completely.",
-          remedy: "Layout interfaces must retain a logical, legible reading hierarchy when completely stripped of chromatic values, relying purely on shape, contrast values, and text descriptors.",
-          source: "W3C Use of Color Analytics",
-          link: "https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html"
-        }
-      ]
-    },
-    {
-      group: "Structural & Spatial Constraints",
-      items: [
-        {
-          metric: "< 20 Degrees",
-          title: "Peripheral Vision Occlusion (Tunnel Vision)",
-          context: "Advanced progression of Glaucoma or Retinitis Pigmentosa constrains a user's functional field of view to a tight central aperture under 20 degrees, rendering the surrounding viewport space invisible during active fixations.",
-          remedy: "Group dynamic state updates, confirmation banners, and context changes immediately adjacent to the triggering control node, rather than throwing notifications to distant screen margins.",
-          source: "W3C Field of Vision Classifications",
-          link: "https://www.w3.org/WAI/people-use-web/abilities/#vision"
-        }
-      ]
+import { useState, useEffect, useRef } from 'react'
+
+export default function Viewport({ 
+  currentUrl, 
+  isBlurActive, 
+  isProtanopiaActive, 
+  isTritanopiaActive, 
+  isLowContrastActive, 
+  isTunnelVisionActive, 
+  isAchromatopsiaActive 
+}) {
+  const [mousePos, setMousePos] = useState({ x: '50%', y: '50%' })
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isTunnelVisionActive || !containerRef.current) return
+      
+      const rect = containerRef.current.getBoundingClientRect()
+      const x = (((e.clientX - rect.left) / rect.width) * 100).toFixed(2)
+      const y = (((e.clientY - rect.top) / rect.height) * 100).toFixed(2)
+      
+      setMousePos({ x: `${x}%`, y: `${y}%` })
     }
-  ];
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [isTunnelVisionActive])
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-950 p-6 lg:p-12 text-slate-200">
-      
-      {/* Viewport Header */}
-      <header className="max-w-5xl mx-auto mb-16 space-y-4">
-        <div className="flex items-center gap-2 text-xs font-mono text-yellow-500 uppercase tracking-widest font-bold">
-          <span>Database Version 2026.1</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-slate-700" />
-          <span>Verified Sources</span>
-        </div>
-        <h2 className="text-3xl font-black text-white tracking-tight uppercase sm:text-4xl">
-          Empirical Compliance Metrics
-        </h2>
-        <p className="text-base text-slate-300 max-w-3xl leading-relaxed">
-          Universal design is grounded in rigorous mathematical and medical observations. Review the core statistical baselines compiled by global research organizations to guide your UI design engineering choices.
-        </p>
-      </header>
+    <div ref={containerRef} className="w-full h-full flex flex-col bg-slate-950 relative">
+      {/* Viewport URL Top Bar */}
+      <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400 select-none">
+        <span className="truncate">Viewing Frame: <strong className="text-white font-medium">{currentUrl}</strong></span>
+        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">SECURE_SANDBOX</span>
+      </div>
 
-      {/* Main Structural Layout Group */}
-      <main className="max-w-5xl mx-auto space-y-16">
-        {categories.map((category, index) => (
-          <section 
-            key={index} 
-            aria-labelledby={`group-heading-${index}`}
-            className="space-y-8"
-          >
-            <h3 
-              id={`group-heading-${index}`}
-              className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-3"
-            >
-              {category.group}
-            </h3>
+      {/* Interactive Testing Canvas Window */}
+      <div className="flex-1 w-full h-full relative overflow-hidden bg-white">
+        
+        {/* CSS SIMULATION FILTERS LAYER */}
+        <div 
+          className="absolute inset-0 pointer-events-none z-30 transition-all duration-200"
+          style={{
+            backdropFilter: `
+              ${isBlurActive ? 'blur(4px)' : 'blur(0px)'}
+            `,
+            filter: `
+              ${isProtanopiaActive ? 'url(#protanopia-filter)' : ''}
+              ${isTritanopiaActive ? 'url(#tritanopia-filter)' : ''}
+              ${isAchromatopsiaActive ? 'grayscale(100%)' : ''}
+              ${isLowContrastActive ? 'contrast(45%) brightness(110%)' : ''}
+            `
+          }}
+        />
 
-            <div className="grid gap-8 md:grid-cols-2">
-              {category.items.map((item, itemIdx) => (
-                <div 
-                  key={itemIdx}
-                  className="bg-slate-900 border border-slate-800/80 rounded-2xl p-8 flex flex-col justify-between hover:border-slate-700/60 transition-colors shadow-lg"
-                >
-                  <div className="space-y-6">
-                    {/* Value Badge & Core Identification */}
-                    <div className="flex items-baseline justify-between gap-4">
-                      <span className="text-4xl font-black text-yellow-500 font-mono tracking-tight">
-                        {item.metric}
-                      </span>
-                      <a 
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-mono text-slate-400 hover:text-blue-400 underline transition-colors shrink-0"
-                        aria-label={`View primary data source for ${item.title}`}
-                      >
-                        {item.source} ↗
-                      </a>
-                    </div>
+        {/* Dynamic Tracking Tunnel Vision Overlay Layer */}
+        {isTunnelVisionActive && (
+          <div 
+            className="absolute inset-0 pointer-events-none z-30"
+            style={{
+              background: `radial-gradient(circle 100px at ${mousePos.x} ${mousePos.y}, transparent 0%, rgba(15, 23, 42, 0.98) 100%)`
+            }}
+          />
+        )}
 
-                    <div className="space-y-2.5">
-                      <h4 className="text-lg font-bold text-white tracking-tight">
-                        {item.title}
-                      </h4>
-                      <p className="text-sm text-slate-300 leading-relaxed">
-                        {item.context}
-                      </p>
-                    </div>
-                  </div>
+        {/* TARGET LIVE SITE FRAME */}
+        <iframe 
+          src={currentUrl} 
+          title="Accessibility Target Viewport"
+          className={`w-full h-full border-none bg-white relative z-10 ${isTunnelVisionActive ? 'pointer-events-none' : 'pointer-events-auto'}`}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+        />
+      </div>
 
-                  {/* Core Remedy Block */}
-                  <div className="mt-8 pt-6 border-t border-slate-950 space-y-2">
-                    <span className="text-xs font-mono uppercase tracking-wider text-blue-400 font-bold block">
-                      Engineering Remedy
-                    </span>
-                    <p className="text-sm text-slate-200 leading-relaxed">
-                      {item.remedy}
-                    </p>
-                  </div>
-
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </main>
-
-      {/* Ground Truth Global Callout Block */}
-      <footer className="max-w-5xl mx-auto mt-20 p-8 bg-slate-900/40 border border-slate-800/60 rounded-2xl text-center space-y-3">
-        <h3 className="text-sm font-bold text-white uppercase tracking-widest">
-          The 1.3 Billion Global Demographic Base
-        </h3>
-        <p className="text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          Approximately 1 in 6 people globally navigate a significant disability. Building inclusive products isn't a post-production polishing step—it's a foundational requirement of structural web architecture.
-        </p>
-      </footer>
-
+      {/* SVG Blindness Shaders Registry Matrix */}
+      <svg className="absolute w-0 h-0 aria-hidden" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="protanopia-filter">
+            <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0" />
+          </filter>
+          <filter id="tritanopia-filter">
+            <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.433,0.567,0,0 0,0.475,0.525,0,0 0,0,0,1,0" />
+          </filter>
+        </defs>
+      </svg>
     </div>
-  );
+  )
 }

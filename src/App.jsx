@@ -1,75 +1,47 @@
 import { useState } from 'react'
 import Sidebar from './components/Sidebar'
-import Header from './components/Header'
 import Viewport from './components/Viewport'
 import ResearchPage from './components/ResearchPage'
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('workspace') // 'workspace' | 'research'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  // Navigation layout control: 'workspace' or 'research'
+  const [currentView, setCurrentView] = useState('workspace')
   
-  // Comprehensive Impairment States
+  // Test website URL state pipes
+  const [urlInput, setUrlInput] = useState('https://example.com')
+  const [currentUrl, setCurrentUrl] = useState('https://example.com')
+
+  // Impairment Shaders & Filter states
   const [isBlurActive, setIsBlurActive] = useState(false)
   const [isProtanopiaActive, setIsProtanopiaActive] = useState(false)
   const [isTritanopiaActive, setIsTritanopiaActive] = useState(false)
   const [isLowContrastActive, setIsLowContrastActive] = useState(false)
   const [isTunnelVisionActive, setIsTunnelVisionActive] = useState(false)
   const [isAchromatopsiaActive, setIsAchromatopsiaActive] = useState(false)
-  
-  const [urlInput, setUrlInput] = useState('https://example.com')
-  const [currentUrl, setCurrentUrl] = useState('https://example.com')
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   const handleUrlSubmit = (e) => {
     e.preventDefault()
-    let formattedUrl = urlInput.trim()
-    if (!/^https?:\/\//i.test(formattedUrl)) {
-      formattedUrl = `https://${formattedUrl}`
+    let cleanUrl = urlInput.trim()
+    if (!/^https?:\/\//i.test(cleanUrl)) {
+      cleanUrl = `https://${cleanUrl}`
     }
-    setCurrentUrl(formattedUrl)
+    setCurrentUrl(cleanUrl)
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 font-sans text-slate-100">
+    <div className="flex h-screen w-screen bg-slate-950 overflow-hidden font-sans text-slate-200">
       
-      {/* GLOBAL SVG MATRIX REGISTRY */}
-      <svg className="absolute w-0 h-0 invisible" aria-hidden="true" focusable="false">
-        <defs>
-          {/* Protanopia */}
-          <filter id="protanopia">
-            <feColorMatrix
-              type="matrix"
-              values="0.567, 0.433, 0,     0, 0
-                      0.558, 0.442, 0,     0, 0
-                      0,     0.242, 0.758, 0, 0
-                      0,     0,     0,     1, 0"
-            />
-          </filter>
-          {/* Tritanopia */}
-          <filter id="tritanopia">
-            <feColorMatrix
-              type="matrix"
-              values="0.95,  0.05,  0,     0, 0
-                      0,     0.433, 0.567, 0, 0
-                      0,     0.475, 0.525, 0, 0
-                      0,     0,     0,     1, 0"
-            />
-          </filter>
-          {/* Total Achromatopsia (Standard Luminance Weightings) */}
-          <filter id="achromatopsia">
-            <feColorMatrix
-              type="matrix"
-              values="0.299, 0.587, 0.114, 0, 0
-                      0.299, 0.587, 0.114, 0, 0
-                      0.299, 0.587, 0.114, 0, 0
-                      0,     0,     0,     1, 0"
-            />
-          </filter>
-        </defs>
-      </svg>
-
+      {/* SIDEBAR STATION */}
       <Sidebar 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        urlInput={urlInput}
+        setUrlInput={setUrlInput}
+        onUrlSubmit={handleUrlSubmit}
         isBlurActive={isBlurActive}
         setIsBlurActive={setIsBlurActive}
         isProtanopiaActive={isProtanopiaActive}
@@ -82,34 +54,36 @@ export default function App() {
         setIsTunnelVisionActive={setIsTunnelVisionActive}
         isAchromatopsiaActive={isAchromatopsiaActive}
         setIsAchromatopsiaActive={setIsAchromatopsiaActive}
-        urlInput={urlInput}
-        setUrlInput={setUrlInput}
-        onUrlSubmit={handleUrlSubmit}
-        currentView={currentView}
-        setCurrentView={setCurrentView}
       />
 
-      <div className="flex flex-1 flex-col overflow-hidden bg-slate-950">
-        <Header 
-          setIsSidebarOpen={setIsSidebarOpen} 
-          currentUrl={currentUrl} 
-          currentView={currentView} 
-        />
-
+      {/* DYNAMIC MAIN STAGE CONTAINER */}
+      <div className="flex-1 flex h-full overflow-hidden relative">
         {currentView === 'workspace' ? (
-          <Viewport 
-            currentUrl={currentUrl} 
-            isBlurActive={isBlurActive} 
-            isProtanopiaActive={isProtanopiaActive} 
-            isTritanopiaActive={isTritanopiaActive}
-            isLowContrastActive={isLowContrastActive}
-            isTunnelVisionActive={isTunnelVisionActive}
-            isAchromatopsiaActive={isAchromatopsiaActive}
-          />
+          /* THE SANDBOX WORKSPACE: This must split your screen or render the frame layout */
+          <div className="flex-1 flex gap-4 p-4 overflow-hidden">
+            
+            {/* LEFT CONTAINER: Your Live Testing Website Viewport Frame */}
+            <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden relative shadow-inner">
+              <Viewport 
+                currentUrl={currentUrl}
+                isBlurActive={isBlurActive}
+                isProtanopiaActive={isProtanopiaActive}
+                isTritanopiaActive={isTritanopiaActive}
+                isLowContrastActive={isLowContrastActive}
+                isTunnelVisionActive={isTunnelVisionActive}
+                isAchromatopsiaActive={isAchromatopsiaActive}
+              />
+            </div>
+
+          </div>
         ) : (
-          <ResearchPage />
+          /* THE DEDICATED FULL-SCREEN COMPLIANCE RESEARCH LAYOUT */
+          <div className="flex-1 overflow-y-auto">
+            <ResearchPage />
+          </div>
         )}
       </div>
+
     </div>
   )
 }
