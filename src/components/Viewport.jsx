@@ -1,87 +1,155 @@
-import { useState, useRef } from 'react'
-
-export default function Viewport({ 
-  currentUrl, 
-  isBlurActive, 
-  isProtanopiaActive, 
-  isTritanopiaActive, 
-  isLowContrastActive,
-  isTunnelVisionActive,
-  isAchromatopsiaActive
-}) {
-  const containerRef = useRef(null)
-  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
-
-  const handleMouseMove = (e) => {
-    if (!isTunnelVisionActive || !containerRef.current) return
-
-    const rect = containerRef.current.getBoundingClientRect()
-    
-    // Calculate raw relative pixels inside the viewport container bounding rect
-    const relativeX = e.clientX - rect.left
-    const relativeY = e.clientY - rect.top
-
-    // Clamp values strictly between 0% and 100% so the tunnel doesn't break at borders
-    const xPct = Math.max(0, Math.min(100, (relativeX / rect.width) * 100))
-    const yPct = Math.max(0, Math.min(100, (relativeY / rect.height) * 100))
-
-    setMousePos({ x: xPct, y: yPct })
-  }
-
-  const handleMouseLeave = () => {
-    setMousePos({ x: 50, y: 50 })
-  }
-
-  // Compile active CSS filters
-  const filterStyles = []
-  if (isBlurActive) filterStyles.push('blur(4px)')
-  if (isProtanopiaActive) filterStyles.push('url(#protanopia)')
-  if (isTritanopiaActive) filterStyles.push('url(#tritanopia)')
-  if (isAchromatopsiaActive) filterStyles.push('url(#achromatopsia)')
-  if (isLowContrastActive) filterStyles.push('contrast(45%) brightness(115%)')
+export default function ResearchPage() {
+  const categories = [
+    {
+      group: "Visual Spectrum Limitations",
+      items: [
+        {
+          metric: "2.2 Billion",
+          title: "Global Near & Distance Impairments",
+          context: "Per the World Health Organization, over 2.2 billion individuals manage near or distance vision complications. A massive baseline segment involves unaddressed presbyopia, creating severe focal blur for users attempting to parse small, dense typography layouts.",
+          remedy: "Enforce a fluid, type-scalable layout architecture using relative CSS units (rem/em) so elements expand dynamically with browser preferences.",
+          source: "WHO Vision Database",
+          link: "https://www.who.int/news-room/fact-sheets/detail/blindness-and-visual-impairment"
+        },
+        {
+          metric: "95.9%",
+          title: "The Automated Failure Baseline",
+          context: "An exhaustive automated software analysis tracking the top 1,000,000 global website homepages revealed that an overwhelming 95.9% displayed clear-cut, distinct WCAG 2 conformance violations.",
+          remedy: "The primary culprit is low contrast text layouts. Integrating rigorous contrast audits directly into pre-production workflows entirely eliminates this baseline failure rate.",
+          source: "The WebAIM Million Annual Evaluation",
+          link: "https://webaim.org/projects/million/"
+        }
+      ]
+    },
+    {
+      group: "Atypical Color Perception Profiles",
+      items: [
+        {
+          metric: "1 in 12 Men",
+          title: "Congenital Color Vision Deficiencies",
+          context: "Congenital color vision deficiencies affect roughly 8% of male populations and 0.5% of female populations globally. This encompasses Protanopia (red-blindness), Deuteranopia (green-blindness), and the rarer Tritanopia (blue-yellow confusion).",
+          remedy: "Never utilize color indicators as the exclusive mechanism to communicate dynamic system states, data variations, alerts, or form interface validation errors.",
+          source: "NIH Eye Institute Research",
+          link: "https://www.nih.gov/"
+        },
+        {
+          metric: "1 in 30,000",
+          title: "Total Achromatopsia Prevalence",
+          context: "Achromatopsia completely limits the eye's retinal cone system, leaving individuals to process visual details exclusively through luminance patterns. Standard color-blind fallback states fail to address this condition completely.",
+          remedy: "Layout interfaces must retain a logical, legible reading hierarchy when completely stripped of chromatic values, relying purely on shape, contrast values, and text descriptors.",
+          source: "W3C Use of Color Analytics",
+          link: "https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html"
+        }
+      ]
+    },
+    {
+      group: "Structural & Spatial Constraints",
+      items: [
+        {
+          metric: "< 20 Degrees",
+          title: "Peripheral Vision Occlusion (Tunnel Vision)",
+          context: "Advanced progression of Glaucoma or Retinitis Pigmentosa constrains a user's functional field of view to a tight central aperture under 20 degrees, rendering the surrounding viewport space invisible during active fixations.",
+          remedy: "Group dynamic state updates, confirmation banners, and context changes immediately adjacent to the triggering control node, rather than throwing notifications to distant screen margins.",
+          source: "W3C Field of Vision Classifications",
+          link: "https://www.w3.org/WAI/people-use-web/abilities/#vision"
+        }
+      ]
+    }
+  ];
 
   return (
-    <div className="flex-1 p-4 lg:p-6 bg-slate-950 overflow-auto flex items-center justify-center">
-      {/* STATIC TRACKING STATION */}
-      <div 
-        ref={containerRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="w-full h-full max-w-6xl bg-black rounded-2xl border border-slate-800 shadow-2xl relative overflow-hidden"
-      >
-        
-        {/* IFRAME WORKSPACE (Isolated styling to prevent event bubble jumping) */}
-        <iframe 
-          src={currentUrl} 
-          title="Live Accessibility Simulation Sandbox Viewport"
-          className="w-full h-full border-none bg-white select-none"
-          style={{ 
-            filter: filterStyles.length > 0 ? filterStyles.join(' ') : 'none',
-            // Prevents the iframe from stealing mouse focus while dragging across the screen
-            pointerEvents: isTunnelVisionActive ? 'none' : 'auto' 
-          }}
-        />
-
-        {/* STATIC SHADER MASK OVERLAY (Completely non-interactive to mouse pointer) */}
-        {isTunnelVisionActive && (
-          <div 
-            className="absolute inset-0 pointer-events-none select-none mix-blend-normal"
-            style={{
-              background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, transparent 8%, rgba(0, 0, 0, 0.98) 18%)`
-            }}
-          />
-        )}
-
-        {/* METRICS CONTROL ROOM */}
-        <div className="absolute bottom-4 right-4 flex flex-wrap gap-1.5 max-w-md justify-end pointer-events-none select-none" role="status">
-          {isBlurActive && <div className="bg-yellow-500/10 backdrop-blur-md border border-yellow-500/20 text-yellow-400 text-[9px] font-mono px-2 py-0.5 rounded">BLUR</div>}
-          {isProtanopiaActive && <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-400 text-[9px] font-mono px-2 py-0.5 rounded">PROTANOPIA</div>}
-          {isTritanopiaActive && <div className="bg-cyan-500/10 backdrop-blur-md border border-cyan-500/20 text-cyan-400 text-[9px] font-mono px-2 py-0.5 rounded">TRITANOPIA</div>}
-          {isAchromatopsiaActive && <div className="bg-slate-500/20 backdrop-blur-md border border-slate-700 text-slate-300 text-[9px] font-mono px-2 py-0.5 rounded">MONOCHROME</div>}
-          {isLowContrastActive && <div className="bg-purple-500/10 backdrop-blur-md border border-purple-500/20 text-purple-400 text-[9px] font-mono px-2 py-0.5 rounded">CONTRAST LOSS</div>}
-          {isTunnelVisionActive && <div className="bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 text-emerald-400 text-[9px] font-mono px-2 py-0.5 rounded">LOCK-ON TUNNEL</div>}
+    <div className="flex-1 overflow-y-auto bg-slate-950 p-6 lg:p-12 text-slate-200">
+      
+      {/* Viewport Header */}
+      <header className="max-w-5xl mx-auto mb-16 space-y-4">
+        <div className="flex items-center gap-2 text-xs font-mono text-yellow-500 uppercase tracking-widest font-bold">
+          <span>Database Version 2026.1</span>
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-700" />
+          <span>Verified Sources</span>
         </div>
-      </div>
+        <h2 className="text-3xl font-black text-white tracking-tight uppercase sm:text-4xl">
+          Empirical Compliance Metrics
+        </h2>
+        <p className="text-base text-slate-300 max-w-3xl leading-relaxed">
+          Universal design is grounded in rigorous mathematical and medical observations. Review the core statistical baselines compiled by global research organizations to guide your UI design engineering choices.
+        </p>
+      </header>
+
+      {/* Main Structural Layout Group */}
+      <main className="max-w-5xl mx-auto space-y-16">
+        {categories.map((category, index) => (
+          <section 
+            key={index} 
+            aria-labelledby={`group-heading-${index}`}
+            className="space-y-8"
+          >
+            <h3 
+              id={`group-heading-${index}`}
+              className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-3"
+            >
+              {category.group}
+            </h3>
+
+            <div className="grid gap-8 md:grid-cols-2">
+              {category.items.map((item, itemIdx) => (
+                <div 
+                  key={itemIdx}
+                  className="bg-slate-900 border border-slate-800/80 rounded-2xl p-8 flex flex-col justify-between hover:border-slate-700/60 transition-colors shadow-lg"
+                >
+                  <div className="space-y-6">
+                    {/* Value Badge & Core Identification */}
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="text-4xl font-black text-yellow-500 font-mono tracking-tight">
+                        {item.metric}
+                      </span>
+                      <a 
+                        href={item.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-mono text-slate-400 hover:text-blue-400 underline transition-colors shrink-0"
+                        aria-label={`View primary data source for ${item.title}`}
+                      >
+                        {item.source} ↗
+                      </a>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      <h4 className="text-lg font-bold text-white tracking-tight">
+                        {item.title}
+                      </h4>
+                      <p className="text-sm text-slate-300 leading-relaxed">
+                        {item.context}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Core Remedy Block */}
+                  <div className="mt-8 pt-6 border-t border-slate-950 space-y-2">
+                    <span className="text-xs font-mono uppercase tracking-wider text-blue-400 font-bold block">
+                      Engineering Remedy
+                    </span>
+                    <p className="text-sm text-slate-200 leading-relaxed">
+                      {item.remedy}
+                    </p>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </main>
+
+      {/* Ground Truth Global Callout Block */}
+      <footer className="max-w-5xl mx-auto mt-20 p-8 bg-slate-900/40 border border-slate-800/60 rounded-2xl text-center space-y-3">
+        <h3 className="text-sm font-bold text-white uppercase tracking-widest">
+          The 1.3 Billion Global Demographic Base
+        </h3>
+        <p className="text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          Approximately 1 in 6 people globally navigate a significant disability. Building inclusive products isn't a post-production polishing step—it's a foundational requirement of structural web architecture.
+        </p>
+      </footer>
+
     </div>
-  )
+  );
 }
