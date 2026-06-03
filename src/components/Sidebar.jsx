@@ -32,38 +32,44 @@ export default function Sidebar({
   const infoProfiles = {
     blur: {
       title: "Far-Sightedness (Presbyopia / Focal Blur)",
-      stats: "Affects over 826 million people globally according to the WHO.",
-      remedy: "Enforce relative type sizes (rem) instead of fixed pixels.",
+      description: "An age-related condition where the eye's lens hardens and loses the flexibility needed to focus on close objects. Small text, dense UI labels, and fine detail become progressively blurry — especially on high-DPI or small screens.",
+      stats: "Over 826 million people globally are affected by unaddressed presbyopia (WHO). It impacts nearly everyone over the age of 45, making it one of the most widespread visual conditions on the planet.",
+      remedy: "Use relative font units (rem/em) instead of fixed pixels. Set a minimum body font size of 16px. Ensure all text and UI scales correctly with browser zoom up to 200% without overflow or content loss.",
       link: "https://www.who.int/publications/i/item/9789241516570"
     },
     protanopia: {
       title: "Protanopia (Red-Cone Deficiency)",
-      stats: "Affects approximately 1% of the male demographic globally.",
-      remedy: "Never rely on raw red/green variations alone to indicate text warnings.",
+      description: "A form of red-green color blindness where the red-sensitive cone cells are absent or non-functional. Reds appear dark brown or black, and any distinction between red and green becomes invisible — affecting traffic lights, status indicators, and form error states.",
+      stats: "Affects approximately 1% of males globally. Combined with Deuteranopia (green-blindness), red-green color blindness impacts around 8% of men and 0.5% of women worldwide — roughly 300 million people.",
+      remedy: "Never use red vs. green alone to convey state (e.g. error vs. success). Always pair color with a distinct icon, label, or pattern. Use shapes and text to communicate meaning independently of hue.",
       link: "https://www.w3.org/WAI/WCAG22/Techniques/general/G14"
     },
     tritanopia: {
       title: "Tritanopia (Blue-Yellow Deficiency)",
-      stats: "Occurs in fewer than 1 in 10,000 individuals worldwide.",
-      remedy: "Do not build structural actions using narrow blue vs. green contrast systems.",
+      description: "A rare form of color blindness caused by absent or non-functional blue cone cells. Blues appear green, yellows shift to pink or violet, and blue-yellow contrasts become completely indistinguishable. Unlike red-green blindness, it can also be acquired through aging or eye disease.",
+      stats: "Tritanopia occurs in fewer than 1 in 10,000 people worldwide, making it significantly rarer than red-green color blindness. Acquired forms are more common and increase with age.",
+      remedy: "Avoid relying on blue vs. yellow or blue vs. green contrast alone to communicate information. Supplement all color-coded UI with labels, icons, or luminance differences that remain distinguishable in greyscale.",
       link: "https://www.nih.gov/"
     },
     contrast: {
       title: "Low Contrast Sensitivity",
-      stats: "Affects millions navigating cataracts alongside billions of mobile screen users.",
-      remedy: "Ensure contrast metrics hit a 4.5:1 ratio threshold for body copy.",
+      description: "A reduced ability to distinguish between elements when the luminance difference between foreground and background is low. Caused by cataracts, glaucoma, diabetic retinopathy, and normal aging. Also triggered situationally — bright sunlight on a phone screen, low-quality displays, or eye fatigue.",
+      stats: "Over 253 million people globally live with vision impairment, with contrast sensitivity loss as a major component. Billions more experience situational contrast issues daily on mobile devices in poor lighting conditions.",
+      remedy: "Meet the WCAG AA minimum of 4.5:1 contrast ratio for standard body text, and 3:1 for large text (18px+ bold or 24px+). Use the Luminance Calculator in this panel to verify color pairs before shipping.",
       link: "https://webaim.org/articles/contrast/"
     },
     tunnel: {
       title: "Tunnel Vision (Peripheral Vision Loss)",
-      stats: "Prevalent in advanced glaucoma or retinitis pigmentosa.",
-      remedy: "Keep contextual system alerts localized immediately near the action buttons.",
+      description: "A condition where only the central field of vision remains intact, eliminating all peripheral awareness. Users can only see a narrow area at a time, making navigation, scanning layouts, and locating off-screen UI elements extremely difficult. Caused by glaucoma, retinitis pigmentosa, or stroke.",
+      stats: "Glaucoma alone affects over 80 million people worldwide (WHO) and is the leading cause of irreversible blindness. Retinitis pigmentosa affects approximately 1 in 4,000 individuals globally.",
+      remedy: "Place error messages, alerts, and key actions close to the triggering element — never in a distant corner. Avoid relying on sidebar or header UI for critical feedback. Use inline validation and contextual popups near user focus points.",
       link: "https://www.w3.org/WAI/people-use-web/abilities/#vision"
     },
     achromatopsia: {
       title: "Total Achromatopsia (Complete Monochromacy)",
-      stats: "Total inability to process any color spectrum frequencies.",
-      remedy: "Establish layout readability completely through luminance and shapes.",
+      description: "A rare congenital condition where all cone cells are absent or non-functional. The person perceives the world entirely in shades of grey, with no ability to distinguish any color frequency. It is often accompanied by severe light sensitivity (photophobia) and reduced visual acuity.",
+      stats: "Total achromatopsia affects approximately 1 in 30,000 people worldwide. Partial forms (affecting some cone types) are more common. For those affected, any color-only UI convention is completely invisible.",
+      remedy: "Design so all information is conveyed through luminance, shape, hierarchy, and labels alone — never color. Test your entire UI in full greyscale mode. Icons and visual weight must carry all meaning color would otherwise provide.",
       link: "https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html"
     }
   }
@@ -274,13 +280,33 @@ export default function Sidebar({
       {/* POPUP MODAL ENGINES */}
       {modalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" role="dialog" aria-modal="true">
-          <div ref={modalRef} tabIndex="-1" className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 focus:outline-none">
-            <div className="flex items-start justify-between">
-              <h3 className="text-sm font-bold text-white">{modalData.title}</h3>
-              <button type="button" onClick={closeModal} className="text-slate-400 hover:text-white text-xs font-mono">✕</button>
+          <div ref={modalRef} tabIndex="-1" className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 focus:outline-none max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-sm font-bold text-white leading-snug">{modalData.title}</h3>
+              <button type="button" onClick={closeModal} className="text-slate-400 hover:text-white text-xs font-mono shrink-0">✕</button>
             </div>
-            <p className="text-xs text-slate-300">{modalData.stats}</p>
-            <button type="button" onClick={closeModal} className="w-full rounded-lg bg-slate-800 py-2 text-xs font-medium text-white">Dismiss</button>
+
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-blue-400">What it is</span>
+                <p className="text-xs text-slate-300 leading-relaxed">{modalData.description}</p>
+              </div>
+
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-amber-400">Who it affects</span>
+                <p className="text-xs text-slate-300 leading-relaxed">{modalData.stats}</p>
+              </div>
+
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-emerald-400">How to design around it</span>
+                <p className="text-xs text-slate-300 leading-relaxed">{modalData.remedy}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <a href={modalData.link} target="_blank" rel="noopener noreferrer" className="text-[10px] font-mono text-blue-400 hover:text-blue-300 underline transition-colors">Source ↗</a>
+              <button type="button" onClick={closeModal} className="rounded-lg bg-slate-800 px-4 py-2 text-xs font-medium text-white hover:bg-slate-700 transition-colors">Dismiss</button>
+            </div>
           </div>
         </div>
       )}
