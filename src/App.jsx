@@ -87,6 +87,9 @@ export default function App() {
               <div className="h-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-inner">
                 <Viewport
                   currentUrl={currentUrl}
+                  urlInput={urlInput}
+                  setUrlInput={setUrlInput}
+                  onUrlSubmit={handleUrlSubmit}
                   isBlurActive={isBlurActive}
                   isProtanopiaActive={isProtanopiaActive}
                   isTritanopiaActive={isTritanopiaActive}

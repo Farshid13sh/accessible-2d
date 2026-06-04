@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 
 export default function Viewport({
   currentUrl,
+  urlInput,
+  setUrlInput,
+  onUrlSubmit,
   isBlurActive,
   isProtanopiaActive,
   isTritanopiaActive,
@@ -49,14 +52,44 @@ export default function Viewport({
   return (
     <div ref={containerRef} className="flex h-full w-full flex-col bg-slate-950">
 
-      {/* URL bar */}
-      <div className="flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900 px-3 py-2 text-xs font-mono text-slate-400 select-none sm:px-4">
-        <span className="truncate min-w-0">
-          Frame: <strong className="font-medium text-white">{currentUrl}</strong>
-        </span>
-        <span className="ml-2 shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-500">
-          SANDBOX
-        </span>
+      {/* URL bar — editable on mobile, display-only on desktop */}
+      <div className="shrink-0 border-b border-slate-800 bg-slate-900">
+
+        {/* Mobile: editable form */}
+        <form
+          onSubmit={onUrlSubmit}
+          className="flex items-center gap-2 px-3 py-2 md:hidden"
+        >
+          <input
+            type="url"
+            inputMode="url"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="https://example.com"
+            aria-label="Website URL"
+            className="min-w-0 flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-blue-500 focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+          >
+            Go
+          </button>
+        </form>
+
+        {/* Desktop: static display */}
+        <div className="hidden items-center justify-between px-4 py-2 text-xs font-mono text-slate-400 select-none md:flex">
+          <span className="truncate min-w-0">
+            Frame: <strong className="font-medium text-white">{currentUrl}</strong>
+          </span>
+          <span className="ml-2 shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-500">
+            SANDBOX
+          </span>
+        </div>
+
       </div>
 
       {/* Mobile notice */}
