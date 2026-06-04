@@ -1,80 +1,94 @@
 import { useState, useEffect, useRef } from 'react'
 
-export default function Viewport({ 
-  currentUrl, 
-  isBlurActive, 
-  isProtanopiaActive, 
-  isTritanopiaActive, 
-  isLowContrastActive, 
-  isTunnelVisionActive, 
-  isAchromatopsiaActive 
+export default function Viewport({
+  currentUrl,
+  isBlurActive,
+  isProtanopiaActive,
+  isTritanopiaActive,
+  isLowContrastActive,
+  isTunnelVisionActive,
+  isAchromatopsiaActive
 }) {
-  const [mousePos, setMousePos] = useState({ x: '50%', y: '50%' })
+  const [pos, setPos] = useState({ x: '50%', y: '50%' })
   const containerRef = useRef(null)
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isTunnelVisionActive || !containerRef.current) return
-      
+    if (!isTunnelVisionActive) return
+
+    const update = (clientX, clientY) => {
+      if (!containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
-      const x = (((e.clientX - rect.left) / rect.width) * 100).toFixed(2)
-      const y = (((e.clientY - rect.top) / rect.height) * 100).toFixed(2)
-      
-      setMousePos({ x: `${x}%`, y: `${y}%` })
+      setPos({
+        x: `${(((clientX - rect.left) / rect.width) * 100).toFixed(2)}%`,
+        y: `${(((clientY - rect.top) / rect.height) * 100).toFixed(2)}%`,
+      })
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    const onMouse = (e) => update(e.clientX, e.clientY)
+    const onTouch = (e) => { const t = e.touches[0]; update(t.clientX, t.clientY) }
+
+    window.addEventListener('mousemove', onMouse)
+    window.addEventListener('touchmove', onTouch, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', onMouse)
+      window.removeEventListener('touchmove', onTouch)
+    }
   }, [isTunnelVisionActive])
 
+  // Build the CSS filter string applied directly to the iframe element.
+  // Applying filter to the iframe itself composites the effect onto its
+  // rendered bitmap, which is the only reliable way to affect iframe content.
+  const iframeFilter = [
+    isProtanopiaActive    && 'url(#protanopia-filter)',
+    isTritanopiaActive    && 'url(#tritanopia-filter)',
+    isAchromatopsiaActive && 'grayscale(100%)',
+    isLowContrastActive   && 'contrast(45%) brightness(110%)',
+    isBlurActive          && 'blur(4px)',
+  ].filter(Boolean).join(' ')
+
   return (
-    <div ref={containerRef} className="w-full h-full flex flex-col bg-slate-950 relative">
-      {/* Viewport URL Top Bar */}
-      <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400 select-none">
-        <span className="truncate">Viewing Frame: <strong className="text-white font-medium">{currentUrl}</strong></span>
-        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">SECURE_SANDBOX</span>
+    <div ref={containerRef} className="flex h-full w-full flex-col bg-slate-950">
+
+      {/* URL bar */}
+      <div className="flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900 px-3 py-2 text-xs font-mono text-slate-400 select-none sm:px-4">
+        <span className="truncate min-w-0">
+          Frame: <strong className="font-medium text-white">{currentUrl}</strong>
+        </span>
+        <span className="ml-2 shrink-0 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-500">
+          SANDBOX
+        </span>
       </div>
 
-      {/* Interactive Testing Canvas Window */}
-      <div className="flex-1 w-full h-full relative overflow-hidden bg-white">
-        
-        {/* CSS SIMULATION FILTERS LAYER */}
-        <div 
-          className="absolute inset-0 pointer-events-none z-30 transition-all duration-200"
-          style={{
-            backdropFilter: `
-              ${isBlurActive ? 'blur(4px)' : 'blur(0px)'}
-            `,
-            filter: `
-              ${isProtanopiaActive ? 'url(#protanopia-filter)' : ''}
-              ${isTritanopiaActive ? 'url(#tritanopia-filter)' : ''}
-              ${isAchromatopsiaActive ? 'grayscale(100%)' : ''}
-              ${isLowContrastActive ? 'contrast(45%) brightness(110%)' : ''}
-            `
-          }}
-        />
+      {/* Mobile notice */}
+      <div className="shrink-0 border-b border-amber-900/40 bg-amber-950/30 px-3 py-1.5 text-[10px] text-amber-400/80 md:hidden">
+        Some sites block iframes — open Controls to apply filters or switch to Research.
+      </div>
 
-        {/* Dynamic Tracking Tunnel Vision Overlay Layer */}
+      {/* Canvas */}
+      <div className="relative flex-1 overflow-hidden bg-white">
+
+        {/* Tunnel vision overlay — radial gradient that follows cursor/touch */}
         {isTunnelVisionActive && (
-          <div 
-            className="absolute inset-0 pointer-events-none z-30"
+          <div
+            className="pointer-events-none absolute inset-0 z-20"
             style={{
-              background: `radial-gradient(circle 100px at ${mousePos.x} ${mousePos.y}, transparent 0%, rgba(15, 23, 42, 0.98) 100%)`
+              background: `radial-gradient(circle 100px at ${pos.x} ${pos.y}, transparent 0%, rgba(15,23,42,0.98) 100%)`
             }}
           />
         )}
 
-        {/* TARGET LIVE SITE FRAME */}
-        <iframe 
-          src={currentUrl} 
+        {/* Live site — all visual filters applied directly to the iframe element */}
+        <iframe
+          src={currentUrl}
           title="Accessibility Target Viewport"
-          className={`w-full h-full border-none bg-white relative z-10 ${isTunnelVisionActive ? 'pointer-events-none' : 'pointer-events-auto'}`}
+          style={{ filter: iframeFilter || undefined }}
+          className={`h-full w-full border-none bg-white ${isTunnelVisionActive ? 'pointer-events-none' : 'pointer-events-auto'}`}
           sandbox="allow-scripts allow-same-origin allow-forms"
         />
       </div>
 
-      {/* SVG Blindness Shaders Registry Matrix */}
-      <svg className="absolute w-0 h-0 aria-hidden" xmlns="http://www.w3.org/2000/svg">
+      {/* SVG color-blindness filter definitions (must live in the host document) */}
+      <svg className="absolute h-0 w-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id="protanopia-filter">
             <feColorMatrix type="matrix" values="0.567,0.433,0,0,0 0.558,0.442,0,0,0 0,0.242,0.758,0,0 0,0,0,1,0" />
@@ -84,6 +98,7 @@ export default function Viewport({
           </filter>
         </defs>
       </svg>
+
     </div>
   )
 }

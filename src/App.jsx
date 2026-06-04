@@ -2,24 +2,41 @@ import { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import Viewport from './components/Viewport'
 import ResearchPage from './components/ResearchPage'
+import Header from './components/header'
+import FilterBar from './components/FilterBar'
 
 export default function App() {
-  // Navigation layout control: 'workspace' or 'research'
   const [currentView, setCurrentView] = useState('workspace')
-  
-  // Test website URL state pipes
   const [urlInput, setUrlInput] = useState('https://example.com')
   const [currentUrl, setCurrentUrl] = useState('https://example.com')
-
-  // Impairment Shaders & Filter states
   const [isBlurActive, setIsBlurActive] = useState(false)
   const [isProtanopiaActive, setIsProtanopiaActive] = useState(false)
   const [isTritanopiaActive, setIsTritanopiaActive] = useState(false)
   const [isLowContrastActive, setIsLowContrastActive] = useState(false)
   const [isTunnelVisionActive, setIsTunnelVisionActive] = useState(false)
   const [isAchromatopsiaActive, setIsAchromatopsiaActive] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const activeFilters = {
+    blur:       isBlurActive,
+    protanopia: isProtanopiaActive,
+    tritanopia: isTritanopiaActive,
+    contrast:   isLowContrastActive,
+    tunnel:     isTunnelVisionActive,
+    mono:       isAchromatopsiaActive,
+  }
+
+  const handleFilterToggle = (key) => {
+    const map = {
+      blur:       setIsBlurActive,
+      protanopia: setIsProtanopiaActive,
+      tritanopia: setIsTritanopiaActive,
+      contrast:   setIsLowContrastActive,
+      tunnel:     setIsTunnelVisionActive,
+      mono:       setIsAchromatopsiaActive,
+    }
+    map[key]?.((prev) => !prev)
+  }
 
   const handleUrlSubmit = (e) => {
     e.preventDefault()
@@ -31,10 +48,9 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen bg-slate-950 overflow-hidden font-sans text-slate-200">
-      
-      {/* SIDEBAR STATION */}
-      <Sidebar 
+    <div className="flex h-svh w-screen overflow-hidden bg-slate-950 font-sans text-slate-200">
+
+      <Sidebar
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         currentView={currentView}
@@ -56,33 +72,45 @@ export default function App() {
         setIsAchromatopsiaActive={setIsAchromatopsiaActive}
       />
 
-      {/* DYNAMIC MAIN STAGE CONTAINER */}
-      <div className="flex-1 flex h-full overflow-hidden relative">
-        {currentView === 'workspace' ? (
-          /* THE SANDBOX WORKSPACE: This must split your screen or render the frame layout */
-          <div className="flex-1 flex gap-4 p-4 overflow-hidden">
-            
-            {/* LEFT CONTAINER: Your Live Testing Website Viewport Frame */}
-            <div className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden relative shadow-inner">
-              <Viewport 
-                currentUrl={currentUrl}
-                isBlurActive={isBlurActive}
-                isProtanopiaActive={isProtanopiaActive}
-                isTritanopiaActive={isTritanopiaActive}
-                isLowContrastActive={isLowContrastActive}
-                isTunnelVisionActive={isTunnelVisionActive}
-                isAchromatopsiaActive={isAchromatopsiaActive}
-              />
-            </div>
+      {/* Right column: header + main stage */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Header
+          setIsSidebarOpen={setIsSidebarOpen}
+          currentUrl={currentUrl}
+          currentView={currentView}
+        />
 
-          </div>
-        ) : (
-          /* THE DEDICATED FULL-SCREEN COMPLIANCE RESEARCH LAYOUT */
-          <div className="flex-1 overflow-y-auto">
-            <ResearchPage />
-          </div>
-        )}
+        <main className="flex-1 overflow-hidden">
+          {currentView === 'workspace' ? (
+            // pb-16 on mobile reserves space for the fixed FilterBar handle (md: restores normal)
+            <div className="h-full p-2 pb-16 sm:p-3 sm:pb-16 md:p-4 md:pb-4">
+              <div className="h-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-inner">
+                <Viewport
+                  currentUrl={currentUrl}
+                  isBlurActive={isBlurActive}
+                  isProtanopiaActive={isProtanopiaActive}
+                  isTritanopiaActive={isTritanopiaActive}
+                  isLowContrastActive={isLowContrastActive}
+                  isTunnelVisionActive={isTunnelVisionActive}
+                  isAchromatopsiaActive={isAchromatopsiaActive}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="h-full overflow-y-auto">
+              <ResearchPage />
+            </div>
+          )}
+        </main>
       </div>
+
+      {/* Mobile-only filter bar — fixed bottom sheet, hidden on md+ */}
+      {currentView === 'workspace' && (
+        <FilterBar
+          activeFilters={activeFilters}
+          onToggle={handleFilterToggle}
+        />
+      )}
 
     </div>
   )
